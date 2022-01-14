@@ -302,10 +302,10 @@ Can::Can(uint32_t baseAddr, enum baudrates baudrate)
          break;
       case CAN2:
          // Configure CAN pin: RX (input pull-up).
-         gpio_set_mode(GPIO_BANK_CAN2_RX, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, GPIO_CAN2_RX);
-         gpio_set(GPIO_BANK_CAN2_RX, GPIO_CAN2_RX);
+         gpio_set_mode(GPIO_BANK_CAN2_RE_RX, GPIO_MODE_INPUT, GPIO_CNF_INPUT_PULL_UPDOWN, GPIO_CAN2_RE_RX);
+         gpio_set(GPIO_BANK_CAN2_RE_RX, GPIO_CAN2_RE_RX);
          // Configure CAN pin: TX.-
-         gpio_set_mode(GPIO_BANK_CAN2_TX, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_CAN2_TX);
+         gpio_set_mode(GPIO_BANK_CAN2_RE_TX, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_CAN2_RE_TX);
 
          //CAN2 RX and TX IRQs
          nvic_enable_irq(NVIC_CAN2_RX0_IRQ); //CAN RX
