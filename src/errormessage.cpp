@@ -111,7 +111,9 @@ void ErrorMessage::PrintAllErrors()
 {
    if (errorBuffer[0].time == 0)
    {
+#ifndef UNIT_TEST
       printf("No Errors\r\n");
+      #endif
       return;
    }
 
@@ -121,5 +123,7 @@ void ErrorMessage::PrintAllErrors()
 
 void ErrorMessage::PrintError(uint32_t time, ERROR_MESSAGE_NUM msg)
 {
+#ifndef UNIT_TEST
    printf("[%u]: %s - %s\r\n", time, types[errorDescriptors[msg].type], errorDescriptors[msg].msg);
+   #endif
 }

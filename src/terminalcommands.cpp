@@ -396,7 +396,10 @@ void TerminalCommands::LoadParameters(Terminal* term, char *arg)
    arg = arg;
    if (0 == parm_load())
    {
+      #ifndef UNIT_TEST
+
       Param::Change((Param::PARAM_NUM)0);
+      #endif
       fprintf(term, "Parameters loaded\r\n");
    }
    else
