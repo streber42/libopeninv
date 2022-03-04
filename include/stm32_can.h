@@ -20,6 +20,8 @@
 #ifndef STM32_CAN_H_INCLUDED
 #define STM32_CAN_H_INCLUDED
 #include "params.h"
+#include "FreeRTOS.h"
+#include "queue.h"
 
 #define CAN_ERR_INVALID_ID -1
 #define CAN_ERR_INVALID_OFS -2
@@ -74,6 +76,7 @@ public:
 
 private:
    static volatile bool isSaving;
+   QueueHandle_t cantxq;
 
    struct CANPOS
    {

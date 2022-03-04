@@ -372,6 +372,7 @@ Can::Can(uint32_t baseAddr, enum baudrates baudrate, bool remap)
 	// Enable CAN RX interrupts.
 	can_enable_irq(canDev, CAN_IER_FMPIE0);
 	can_enable_irq(canDev, CAN_IER_FMPIE1);
+   cantxq = xQueueCreate(33, sizeof(SENDBUFFER));
 }
 
 /** \brief Set baud rate to given value
@@ -423,22 +424,29 @@ uint32_t Can::GetLastRxTimestamp()
  */
 void Can::Send(uint32_t canId, uint32_t data[2], uint8_t len)
 {
-   can_disable_irq(canDev, CAN_IER_TMEIE);
+   // can_disable_irq(canDev, CAN_IER_TMEIE);
+   SENDBUFFER msg;
+   msg.id = canId;
+   msg.data[0] = data[0];
+   msg.data[1] = data[1];
+   msg.len = len;
+   xQueueSend(cantxq,&msg,( TickType_t ) 10);
+   sendCnt++;
 
-   if (can_transmit(canDev, canId, false, false, len, (uint8_t*)data) < 0 && sendCnt < SENDBUFFER_LEN)
-   {
-      /* enqueue in send buffer if all TX mailboxes are full */
-      sendBuffer[sendCnt].id = canId;
-      sendBuffer[sendCnt].len = len;
-      sendBuffer[sendCnt].data[0] = data[0];
-      sendBuffer[sendCnt].data[1] = data[1];
-      sendCnt++;
-   }
+   // if (can_transmit(canDev, canId, false, false, len, (uint8_t*)data) < 0 && sendCnt < SENDBUFFER_LEN)
+   // {
+   //    /* enqueue in send buffer if all TX mailboxes are full */
+   //    sendBuffer[sendCnt].id = canId;
+   //    sendBuffer[sendCnt].len = len;
+   //    sendBuffer[sendCnt].data[0] = data[0];
+   //    sendBuffer[sendCnt].data[1] = data[1];
+   //    sendCnt++;
+   // }
 
-   if (sendCnt > 0)
-   {
-      can_enable_irq(canDev, CAN_IER_TMEIE);
-   }
+   // if (sendCnt > 0)
+   // {
+   //    can_enable_irq(canDev, CAN_IER_TMEIE);
+   // }
 }
 
 void Can::IterateCanMap(void (*callback)(Param::PARAM_NUM, int, int, int, s32fp, bool))
@@ -521,13 +529,17 @@ void Can::HandleRx(int fifo)
 
 void Can::HandleTx()
 {
-   while (sendCnt > 0 && can_transmit(canDev, sendBuffer[sendCnt - 1].id, false, false, sendBuffer[sendCnt - 1].len, (uint8_t*)sendBuffer[sendCnt - 1].data) >= 0)
-      sendCnt--;
-
-   if (sendCnt == 0)
-   {
-      can_disable_irq(canDev, CAN_IER_TMEIE);
+   SENDBUFFER cmsg;
+   while ( xQueueReceive(cantxq,&cmsg,(TickType_t) 1 ) == pdPASS ) {
+      can_transmit(canDev,cmsg.id,false,false,cmsg.len,(uint8_t*)cmsg.data);
    }
+   // while (sendCnt > 0 && can_transmit(canDev, sendBuffer[sendCnt - 1].id, false, false, sendBuffer[sendCnt - 1].len, (uint8_t*)sendBuffer[sendCnt - 1].data) >= 0)
+   //    sendCnt--;
+
+   // if (sendCnt == 0)
+   // {
+   //    can_disable_irq(canDev, CAN_IER_TMEIE);
+   // }
 }
 
 void Can::SDOWrite(uint8_t remoteNodeId, uint16_t index, uint8_t subIndex, uint32_t data)
