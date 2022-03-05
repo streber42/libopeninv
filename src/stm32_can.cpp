@@ -430,7 +430,7 @@ void Can::Send(uint32_t canId, uint32_t data[2], uint8_t len)
    msg.data[0] = data[0];
    msg.data[1] = data[1];
    msg.len = len;
-   xQueueSend(cantxq,&msg,( TickType_t ) 10);
+   xQueueSendToBack(cantxq,&msg,( TickType_t ) 10);
    sendCnt++;
 
    // if (can_transmit(canDev, canId, false, false, len, (uint8_t*)data) < 0 && sendCnt < SENDBUFFER_LEN)
