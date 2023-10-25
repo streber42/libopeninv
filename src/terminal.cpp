@@ -40,7 +40,7 @@ const Terminal::HwInfo Terminal::hwInfo[] =
 
 Terminal* Terminal::defaultTerminal;
 
-Terminal::Terminal(uint32_t usart, const TERM_CMD* commands, bool remap)
+Terminal::Terminal(uint32_t usart, const TERM_CMD* commands, bool remap, bool enablefastuart)
 :  usart(usart),
    remap(remap),
    termCmds(commands),
@@ -51,7 +51,8 @@ Terminal::Terminal(uint32_t usart, const TERM_CMD* commands, bool remap)
    lastIdx(0),
    curBuf(0),
    curIdx(0),
-   firstSend(true)
+   firstSend(true),
+   enablefastuart(enablefastuart)
 {
    //Search info entry
    hw = hwInfo;
@@ -137,7 +138,11 @@ void Terminal::Run()
          }
          else if (my_strcmp(inBuf, "fastuart") == 0)
          {
-            FastUart(args);
+            if (enablefastuart) {
+              FastUart(args);
+            } else {
+               Send("fastuart not available\r\n");
+            }
             currentIdx = 0;
          }
          else
